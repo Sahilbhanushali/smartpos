@@ -1,0 +1,35 @@
+<?php
+
+namespace App\Filament\Resources\Products\Pages;
+
+use App\Filament\Resources\Products\ProductResource;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\ForceDeleteAction;
+use Filament\Actions\RestoreAction;
+use Filament\Resources\Pages\EditRecord;
+use Illuminate\Support\Facades\Auth;
+
+class EditProduct extends EditRecord
+{
+    protected static string $resource = ProductResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            DeleteAction::make(),
+            ForceDeleteAction::make(),
+            RestoreAction::make(),
+        ];
+    }
+
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        $userId = Auth::id();
+
+        if ($userId) {
+            $data['updated_by'] = $userId;
+        }
+
+        return $data;
+    }
+}
