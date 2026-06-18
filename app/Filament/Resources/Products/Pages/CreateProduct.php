@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Products\Pages;
 
 use App\Filament\Resources\Concerns\HasFormActionsAtTopAndBottom;
 use App\Filament\Resources\Products\ProductResource;
+use App\Support\AppNotifier;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -26,5 +27,14 @@ class CreateProduct extends CreateRecord
         $data['slug'] = Str::slug($data['name'] ?? '');
 
         return $data;
+    }
+
+    protected function afterCreate(): void
+    {
+        $user = Auth::user();
+
+        if ($user) {
+            AppNotifier::notifyForModelAction($user, $this->record, 'created');
+        }
     }
 }

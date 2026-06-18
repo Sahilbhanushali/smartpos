@@ -4,7 +4,9 @@ namespace App\Filament\Resources\Users\Pages;
 
 use App\Filament\Resources\Concerns\HasFormActionsAtTopAndBottom;
 use App\Filament\Resources\Users\UserResource;
+use App\Support\AppNotifier;
 use Filament\Resources\Pages\CreateRecord;
+use Illuminate\Support\Facades\Auth;
 
 class CreateUser extends CreateRecord
 {
@@ -33,6 +35,21 @@ class CreateUser extends CreateRecord
             $this->record->applyModulePermissions($permissions);
         } else {
             $this->record->syncModulePermissions();
+        }
+
+        AppNotifier::notifySuperAdmins(
+            'New user created',
+            "User account \"{$this->record->name}\" ({$this->record->email}) was created.",
+            'info',
+        );
+
+        if ($actor = Auth::user()) {
+            AppNotifier::send(
+                $actor,
+                'User created',
+                "You created the user account for {$this->record->name}.",
+                'success',
+            );
         }
     }
 }

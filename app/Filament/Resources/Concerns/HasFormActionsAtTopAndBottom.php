@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Concerns;
 
+use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
 use Filament\Resources\Pages\EditRecord;
 use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Components\Component;
@@ -62,10 +64,35 @@ trait HasFormActionsAtTopAndBottom
 
     protected function getBottomFormActionsContentComponent(): Component
     {
-        return Actions::make($this->getFormActions())
+        return Actions::make($this->getBottomFormActions())
             ->alignment(Alignment::End)
             ->fullWidth($this->hasFullWidthFormActions())
             ->sticky(false)
+            ->extraAttributes([
+                'class' => 'mt-6 w-full border-t border-gray-200 pt-4 dark:border-white/10',
+            ])
             ->key('form-actions-footer');
+    }
+
+    /**
+     * @return array<Action | ActionGroup>
+     */
+    protected function getBottomFormActions(): array
+    {
+        return collect($this->getFormActions())
+            ->map(function (Action | ActionGroup $action): Action | ActionGroup {
+                if (! $action instanceof Action) {
+                    return $action;
+                }
+
+                $footerAction = $action->name($action->getName().'Footer');
+
+                if ($footerAction->canSubmitForm()) {
+                    $footerAction->formId('form');
+                }
+
+                return $footerAction;
+            })
+            ->all();
     }
 }
